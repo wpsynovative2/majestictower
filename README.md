@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Majestic Tower
 
-## Getting Started
+Marketing site for **Majestic Tower** — premium 2 & 3 BHK residences in
+Nalasopara West, Mumbai, by Patil Builders. MahaRERA `P99000079138`.
 
-First, run the development server:
+Built with **Next.js 16 (App Router)**, **TypeScript** and **Tailwind CSS v4**.
+Leads from every form and popup are delivered to a **Google Sheet** and an
+**email inbox** through a Google Apps Script web app, protected by invisible
+**reCAPTCHA v3** verified server-side.
+
+## Quick start
 
 ```bash
+npm install
+cp .env.example .env.local   # fill in the endpoint and reCAPTCHA site key
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open <http://localhost:3000>.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build   # production build (fully static)
+npm start       # serve the build
+npm run lint
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Configuration
 
-## Learn More
+Everything wiring-related — creating the Google Sheet, installing and deploying
+the Apps Script, obtaining and placing the reCAPTCHA keys, and the full list of
+environment variables — is documented in **[SETUP.md](SETUP.md)**.
 
-To learn more about Next.js, take a look at the following resources:
+The Apps Script itself lives in
+[`google-apps-script/Code.gs`](google-apps-script/Code.gs).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Editing content
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+All copy, figures, amenity lists, floor plans, landmarks, FAQs and legal text
+live in **[`lib/content.ts`](lib/content.ts)**. Nothing is hard-coded inside the
+components, so text changes are a single-file edit.
 
-## Deploy on Vercel
+Images are in `public/images/`. `public/Refrences/` holds the design reference
+boards and is not used by the site.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Structure
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Path | What's there |
+| --- | --- |
+| `app/` | Layout (fonts, metadata, JSON-LD), the page, global CSS + theme tokens |
+| `components/site/` | Page sections — header, hero, overview, residences, amenities, connectivity, gallery, journey, FAQ, contact, footer, floating CTAs |
+| `components/lead/` | Lead context, the shared form, modal shell, popups, CTA triggers |
+| `components/ui/` | Button, scroll-reveal, section heading, icon set |
+| `lib/` | Content, validation, lead transport, reCAPTCHA loader |
+| `google-apps-script/` | The Sheet + email receiver |
+
+## Notes
+
+- The brochure download is form-gated: the file link is revealed on the success
+  screen after a lead is captured. Point `NEXT_PUBLIC_BROCHURE_URL` at the real
+  PDF once it exists.
+- Animations respect `prefers-reduced-motion`.
