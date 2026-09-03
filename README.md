@@ -19,10 +19,14 @@ npm run dev
 Open <http://localhost:3000>.
 
 ```bash
-npm run build   # production build (fully static)
-npm start       # serve the build
+npm run build       # production build, webpack (fully static)
+npm run build:turbo # same build via Turbopack — faster, needs native SWC
+npm start           # serve the build
 npm run lint
 ```
+
+> `build` uses `--webpack` because the deploy host falls back to WASM SWC, which
+> cannot run Turbopack. See [SETUP.md §9](SETUP.md).
 
 ## Configuration
 

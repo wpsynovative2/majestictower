@@ -251,7 +251,24 @@ Error: Cannot find module '…/<hash>.next.config'
 
 **This is why the config is `next.config.mjs`, not `next.config.ts`.** Plain
 ESM is imported directly with no compile step, so that path is never taken.
-Do not convert it back to TypeScript unless the host's glibc is upgraded.
+
+The same WASM fallback rules out **Turbopack**, which has no WASM build and is
+the default bundler for `next build` in Next 16:
+
+```
+Error: Turbopack is not supported on this platform (linux/x64) because native
+bindings are not available. Only WebAssembly (WASM) bindings were loaded, and
+Turbopack requires native bindings.
+```
+
+**This is why `npm run build` is `next build --webpack`.** `npm run build:turbo`
+is kept for local builds on a machine with working native bindings, where
+Turbopack is roughly twice as fast.
+
+Neither of these should be reverted unless the host's glibc is upgraded. Both
+produce byte-equivalent output for this project; the only difference under
+webpack is that the font files are not `<link rel="preload">`-ed in the head
+(they still load from `@font-face` in the CSS bundle).
 
 Set the environment variables from §4 in *Deployments → Environment variables*
 before triggering a build — they are inlined at build time, so a rebuild is
@@ -263,7 +280,7 @@ Every route in this project prerenders as static HTML. If the WASM build proves
 too slow on shared hosting, the alternatives, in order of preference:
 
 1. Build in CI (GitHub Actions on `ubuntu-latest` has a current glibc, so it
-   uses the fast native SWC) and deploy the output.
+   uses the fast native SWC and Turbopack) and deploy the output.
 2. Add `output: "export"` plus `images: { unoptimized: true }` to
    `next.config.mjs` and serve the generated `out/` directory as plain static
    files — no Node process at all. The trade-off is losing `next/image`
