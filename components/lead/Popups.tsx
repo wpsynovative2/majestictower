@@ -169,7 +169,7 @@ export function ExitIntentPopup() {
             <LeadForm
               source="Exit Intent Popup"
               submitLabel="Send Me the Offer"
-              onSuccess={() => window.setTimeout(() => setOpen(false), 3500)}
+              onSuccess={() => setOpen(false)}
             />
           </div>
         </div>

@@ -148,6 +148,23 @@ answer. The script reads the raw JSON from `e.postData.contents`. If the fetch
 still fails, the client retries once with `mode: "no-cors"` so the lead is not
 lost — the response is then opaque, and the user still sees the success state.
 
+### After a successful submit
+
+Every form — the inline site-visit form and all three popups — redirects to
+**`/thank-you?source=<form>`** on success. The page:
+
+- greets the visitor by first name and repeats the number we will call, read
+  from `sessionStorage` rather than the URL so no personal data ends up in a
+  shareable link or in analytics;
+- offers the brochure download when the lead came from the brochure CTA;
+- pushes a `generate_lead` dataLayer event carrying `lead_source`, so GTM can
+  hang a conversion trigger on it (either that event or the `/thank-you`
+  pageview);
+- is `noindex, follow` — it has no standalone search value.
+
+Visiting `/thank-you` directly, with nothing in `sessionStorage`, degrades to a
+generic thank-you with no name, number or brochure link.
+
 ### Fields captured on every form
 
 | Field | Visible | Validation |
@@ -173,13 +190,14 @@ focused on a failed submit.
 
 ```
 app/
-  layout.tsx           fonts, metadata, JSON-LD, LeadProvider, popups
+  layout.tsx           fonts, metadata, GTM, JSON-LD, LeadProvider, popups
   page.tsx             section order
+  thank-you/page.tsx   post-submit confirmation
   globals.css          Tailwind v4 @theme tokens, keyframes, .reveal
 components/
   site/                Header, Hero, Overview, Residences, Amenities,
                        CtaBanner, Connectivity, Gallery, Journey, Faq,
-                       Contact, Footer, FloatingCta, Lightbox
+                       Contact, Footer, FloatingCta, Lightbox, ThankYou
   lead/                LeadContext, LeadForm, Modal, Popups, CtaTriggers
   ui/                  Button, Reveal, SectionHeading, Icons
 lib/

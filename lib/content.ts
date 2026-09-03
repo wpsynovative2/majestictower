@@ -46,14 +46,18 @@ export const mapEmbedUrl =
 export const mapDirectionsUrl =
   "https://www.google.com/maps/dir/?api=1&destination=19.4137037,72.8169724";
 
-/** Header / in-page navigation. */
+/**
+ * Header / in-page navigation. `href` is root-relative so the same links work
+ * from /thank-you as well as the home page; on "/" the browser treats them as
+ * a same-document hash and simply scrolls. `id` is the section element's id.
+ */
 export const navLinks = [
-  { label: "Overview", href: "#overview" },
-  { label: "Residences", href: "#residences" },
-  { label: "Amenities", href: "#amenities" },
-  { label: "Connectivity", href: "#connectivity" },
-  { label: "Gallery", href: "#gallery" },
-  { label: "Contact", href: "#contact" },
+  { label: "Overview", id: "overview", href: "/#overview" },
+  { label: "Residences", id: "residences", href: "/#residences" },
+  { label: "Amenities", id: "amenities", href: "/#amenities" },
+  { label: "Connectivity", id: "connectivity", href: "/#connectivity" },
+  { label: "Gallery", id: "gallery", href: "/#gallery" },
+  { label: "Contact", id: "contact", href: "/#contact" },
 ] as const;
 
 /** The four headline facts shown on the original hero strip. */
@@ -426,6 +430,31 @@ export const faqs = [
     a: "You can contact Majestic Tower at +91 9702090090, email info@patilbuilders.in, use the enquiry form on the website, or message via WhatsApp.",
   },
 ] as const;
+
+/** Confirmation page shown after any form is submitted successfully. */
+export const thankYou = {
+  eyebrow: "Enquiry Received",
+  title: "Thank you",
+  body: "Your details are with our sales desk. A Majestic Tower specialist will call you shortly to talk through pricing, availability and the next steps.",
+  steps: [
+    {
+      step: "01",
+      title: "We call you back",
+      body: "Usually within one working day, during sales lounge hours.",
+    },
+    {
+      step: "02",
+      title: "We share the details",
+      body: "Current price list, available floors and the payment plan that suits you.",
+    },
+    {
+      step: "03",
+      title: "We book your visit",
+      body: "See the layouts and the podium deck in person, at a time you pick.",
+    },
+  ],
+  urgent: "In a hurry? Call or WhatsApp us directly — we answer during lounge hours.",
+} as const;
 
 export const footer = {
   blurb:

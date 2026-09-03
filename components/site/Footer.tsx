@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { project, contact, footer, navLinks } from "@/lib/content";
 import Reveal from "@/components/ui/Reveal";
 import PrivacyLink from "./PrivacyLink";
@@ -105,7 +106,7 @@ export default function Footer() {
             <ul className="mt-5 space-y-2.5">
               {navLinks.map((link) => (
                 <li key={link.href}>
-                  <a
+                  <Link
                     href={link.href}
                     className="group inline-flex items-center gap-2 text-sm text-cream-200/60 transition-colors hover:text-cream-50"
                   >
@@ -114,7 +115,7 @@ export default function Footer() {
                       className="h-px w-0 bg-gold-400 transition-all duration-300 group-hover:w-4"
                     />
                     {link.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
               <li>

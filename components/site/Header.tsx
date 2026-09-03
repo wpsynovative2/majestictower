@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { navLinks, project, contact } from "@/lib/content";
 import { EnquireButton } from "@/components/lead/CtaTriggers";
 import { PhoneIcon, CloseIcon } from "@/components/ui/Icons";
@@ -21,7 +22,7 @@ export default function Header() {
   // Highlight the section currently in view.
   useEffect(() => {
     const sections = navLinks
-      .map((link) => document.querySelector<HTMLElement>(link.href))
+      .map((link) => document.getElementById(link.id))
       .filter((el): el is HTMLElement => Boolean(el));
     if (sections.length === 0) return;
 
@@ -30,7 +31,7 @@ export default function Header() {
         const visible = entries
           .filter((entry) => entry.isIntersecting)
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (visible) setActive(`#${visible.target.id}`);
+        if (visible) setActive(visible.target.id);
       },
       { rootMargin: "-45% 0px -50% 0px", threshold: [0, 0.25, 0.5] },
     );
@@ -58,8 +59,8 @@ export default function Header() {
         }`}
       >
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-          <a
-            href="#top"
+          <Link
+            href="/#top"
             className="flex shrink-0 items-center gap-2.5 transition-transform duration-300 hover:scale-[1.02]"
             aria-label={`${project.name} home`}
           >
@@ -93,13 +94,13 @@ export default function Header() {
                 by {project.developer}
               </span>
             </span>
-          </a>
+          </Link>
 
           <nav className="hidden items-center gap-1 lg:flex">
             {navLinks.map((link) => {
-              const isActive = active === link.href;
+              const isActive = active === link.id;
               return (
-                <a
+                <Link
                   key={link.href}
                   href={link.href}
                   className={`group relative rounded-full px-3.5 py-2 text-[13px] font-medium transition-colors duration-300 ${
@@ -118,7 +119,7 @@ export default function Header() {
                       isActive ? "scale-x-100" : ""
                     }`}
                   />
-                </a>
+                </Link>
               );
             })}
           </nav>
@@ -205,7 +206,7 @@ export default function Header() {
 
           <nav className="mt-8 flex flex-col gap-1">
             {navLinks.map((link, index) => (
-              <a
+              <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setMenuOpen(false)}
@@ -215,7 +216,7 @@ export default function Header() {
                 }`}
               >
                 {link.label}
-              </a>
+              </Link>
             ))}
           </nav>
 

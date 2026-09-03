@@ -2,24 +2,30 @@
 
 import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 import { configurationOptions, consentLabel } from "@/lib/content";
-import { sendLead, type LeadSource } from "@/lib/leads";
+import { useRouter } from "next/navigation";
+import {
+  sendLead,
+  rememberLead,
+  thankYouUrl,
+  type LeadSource,
+} from "@/lib/leads";
 import { recaptchaEnabled, loadRecaptcha } from "@/lib/recaptcha";
 import {
   validateLead,
   hasErrors,
+  normalizeIndianMobile,
   type LeadFormErrors,
   type LeadFormValues,
 } from "@/lib/validation";
 import { useLead } from "./LeadContext";
 import { CtaButton, ArrowRight } from "@/components/ui/Button";
-import { CheckIcon } from "@/components/ui/Icons";
 
 type LeadFormProps = {
   source: LeadSource;
   tone?: "light" | "dark";
   submitLabel?: string;
   configuration?: string;
-  /** Offered on the success screen (brochure flow). */
+  /** Brochure flow: offered on the confirmation page after redirect. */
   downloadUrl?: string;
   onSuccess?: () => void;
   compact?: boolean;
@@ -47,7 +53,8 @@ export default function LeadForm({
   compact = false,
 }: LeadFormProps) {
   const uid = useId();
-  const { pushToast, markConverted, openPrivacy } = useLead();
+  const router = useRouter();
+  const { pushToast, markConverted, openPrivacy, closeEnquiry } = useLead();
 
   const [values, setValues] = useState<LeadFormValues>({
     ...emptyValues,
@@ -56,7 +63,8 @@ export default function LeadForm({
   const [errors, setErrors] = useState<LeadFormErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [submitting, setSubmitting] = useState(false);
-  const [done, setDone] = useState(false);
+  // Kept true through the navigation so the button never flips back to idle.
+  const [redirecting, setRedirecting] = useState(false);
 
   // Hidden fields. Read from the browser through useSyncExternalStore so the
   // server renders an empty string and the client fills it in on hydration,
@@ -123,54 +131,33 @@ export default function LeadForm({
     setSubmitStamp(new Date().toISOString());
 
     const result = await sendLead(values, source, honeypot);
-    setSubmitting(false);
 
     if (result.ok) {
-      setDone(true);
       markConverted();
-      pushToast({
-        tone: "success",
-        title: "Thank you — we have your details.",
-        body: "Our sales team will call you shortly on the number you shared.",
+      // Hand the confirmation page what it needs to greet the visitor and,
+      // for the brochure flow, to offer the file.
+      rememberLead({
+        name: values.name.trim(),
+        phone: normalizeIndianMobile(values.phone),
+        source,
+        configuration: values.configuration,
+        downloadUrl,
       });
+      setRedirecting(true);
+      // Dismiss whatever container this form is in — the popups live in the
+      // root layout, so they would otherwise survive the route change.
       onSuccess?.();
-    } else {
-      pushToast({
-        tone: "error",
-        title: "We could not send that.",
-        body: result.error,
-      });
+      closeEnquiry();
+      router.push(thankYouUrl(source));
+      return;
     }
-  }
 
-  if (done) {
-    return (
-      <div
-        className={`flex flex-col items-center gap-4 rounded-4xl px-6 py-10 text-center ${
-          dark ? "bg-forest-800/60 text-cream-100" : "bg-forest-900 text-cream-100"
-        }`}
-      >
-        <span className="grid h-14 w-14 animate-pop-in place-items-center rounded-full bg-gold-400 text-forest-950">
-          <CheckIcon className="h-7 w-7" />
-        </span>
-        <div>
-          <p className="font-display text-2xl">Thank you, {values.name.split(" ")[0]}.</p>
-          <p className="mt-2 text-sm text-cream-200/80">
-            Your enquiry has reached our sales desk. Expect a call on{" "}
-            <span className="text-gold-300">{values.phone}</span> shortly.
-          </p>
-        </div>
-        {downloadUrl ? (
-          <a
-            href={downloadUrl}
-            download
-            className="mt-1 inline-flex items-center gap-2 rounded-full bg-clay-500 px-6 py-3 text-sm font-semibold text-cream-50 transition-transform duration-200 hover:-translate-y-0.5 hover:bg-clay-600"
-          >
-            Download Brochure
-          </a>
-        ) : null}
-      </div>
-    );
+    setSubmitting(false);
+    pushToast({
+      tone: "error",
+      title: "We could not send that.",
+      body: result.error,
+    });
   }
 
   const labelClass = `mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.14em] ${
@@ -365,13 +352,13 @@ export default function LeadForm({
         size="lg"
         variant="primary"
         shimmer
-        disabled={submitting}
+        disabled={submitting || redirecting}
         className="w-full"
       >
-        {submitting ? (
+        {submitting || redirecting ? (
           <>
             <span className="h-4 w-4 animate-spin rounded-full border-2 border-cream-50/40 border-t-cream-50" />
-            Sending…
+            {redirecting ? "Taking you to confirmation…" : "Sending…"}
           </>
         ) : (
           <>

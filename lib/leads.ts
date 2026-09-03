@@ -155,3 +155,46 @@ export async function sendLead(
   }
   return submitLead(buildLeadPayload(values, source, token, company));
 }
+
+/* ------------------------------------------------------------- thank you */
+
+export const THANK_YOU_PATH = "/thank-you";
+
+const LAST_LEAD_KEY = "mt_last_lead";
+
+/** The slice of the submitted lead the confirmation page shows back. */
+export type LastLead = {
+  name: string;
+  phone: string;
+  source: LeadSource;
+  configuration: string;
+  /** Present for the brochure flow, so the file is offered after redirect. */
+  downloadUrl?: string;
+};
+
+/**
+ * Stashed in sessionStorage rather than the URL — the confirmation page can
+ * greet the visitor by name without putting personal data in a shareable link
+ * or in analytics. Only the non-identifying source travels as a query param.
+ */
+export function rememberLead(lead: LastLead): void {
+  try {
+    window.sessionStorage.setItem(LAST_LEAD_KEY, JSON.stringify(lead));
+  } catch {
+    // Private browsing — the page falls back to a generic thank you.
+  }
+}
+
+export function readLastLead(): LastLead | null {
+  try {
+    const raw = window.sessionStorage.getItem(LAST_LEAD_KEY);
+    return raw ? (JSON.parse(raw) as LastLead) : null;
+  } catch {
+    return null;
+  }
+}
+
+/** e.g. "Enquiry Popup" -> "/thank-you?source=enquiry_popup" */
+export function thankYouUrl(source: LeadSource): string {
+  return `${THANK_YOU_PATH}?source=${toRecaptchaAction(source)}`;
+}
