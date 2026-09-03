@@ -228,7 +228,51 @@ mirror the purpose of the ones on the reference site.
 
 ---
 
-## 9. Before going live
+## 9. Deploying to Hostinger
+
+Hostinger's build image ships an old glibc (< 2.29), so Next cannot load its
+native SWC binary and falls back to `@next/swc-wasm-nodejs`:
+
+```
+⚠ Attempted to load @next/swc-linux-x64-gnu, but an error occurred:
+  /lib64/libm.so.6: version `GLIBC_2.29' not found
+Using cached swc package @next/swc-wasm-nodejs…
+```
+
+Those two warnings are survivable — the build just runs slower on the WASM
+compiler. What is **not** survivable is a TypeScript config: under the WASM
+fallback Next fails to compile `next.config.ts`, and the build dies with
+
+```
+× Failed to load next.config.ts
+Error: Cannot find module '…/<hash>.next.config'
+       imported from '…/next.config.compiled.js'  (ERR_MODULE_NOT_FOUND)
+```
+
+**This is why the config is `next.config.mjs`, not `next.config.ts`.** Plain
+ESM is imported directly with no compile step, so that path is never taken.
+Do not convert it back to TypeScript unless the host's glibc is upgraded.
+
+Set the environment variables from §4 in *Deployments → Environment variables*
+before triggering a build — they are inlined at build time, so a rebuild is
+required after changing any of them.
+
+### If builds stay slow or run out of memory
+
+Every route in this project prerenders as static HTML. If the WASM build proves
+too slow on shared hosting, the alternatives, in order of preference:
+
+1. Build in CI (GitHub Actions on `ubuntu-latest` has a current glibc, so it
+   uses the fast native SWC) and deploy the output.
+2. Add `output: "export"` plus `images: { unoptimized: true }` to
+   `next.config.mjs` and serve the generated `out/` directory as plain static
+   files — no Node process at all. The trade-off is losing `next/image`
+   optimisation, which matters on an image-heavy page like this one, so weigh
+   it before switching.
+
+---
+
+## 10. Before going live
 
 - [ ] Drop the real brochure PDF into `public/` and point `NEXT_PUBLIC_BROCHURE_URL` at it.
 - [ ] Add the production domain to the reCAPTCHA key's allow-list.
