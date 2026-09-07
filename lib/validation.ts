@@ -64,12 +64,12 @@ export function validateLead(
       "Enter a valid 10-digit Indian mobile number starting with 6, 7, 8 or 9.";
   }
 
-  const email = values.email.trim();
-  if (!email) {
-    errors.email = "Please enter your email address.";
-  } else if (!isValidEmail(email)) {
-    errors.email = "Enter a valid email address, e.g. name@example.com";
-  }
+  // const email = values.email.trim();
+  // if (!email) {
+  //   errors.email = "Please enter your email address.";
+  // } else if (!isValidEmail(email)) {
+  //   errors.email = "Enter a valid email address, e.g. name@example.com";
+  // }
 
   if (requireConsent && !values.consent) {
     errors.consent = "Please accept the Privacy Policy to continue.";
